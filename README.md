@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# LogNessMonster - Log Analysis Tool
+
+LogNessMonster is a powerful Next.js application designed to analyze and visualize log data. It allows users to paste various types of logs, automatically detects the format, and generates insightful visualizations to help identify patterns, issues, and trends.
+
+## Features
+
+- **Multi-format Log Support**: Automatically detects and parses different log formats:
+  - JSON logs
+  - Apache/NGINX access logs
+  - Timestamped logs
+  - Generic text logs
+- **Interactive Visualizations**:
+  - Time-based distribution of logs
+  - Log level distribution
+  - HTTP status code analysis
+  - Common message patterns
+  - Top requested paths (for web server logs)
+- **Real-time Analysis**: Process logs client-side for immediate results
+- **Modern UI**: Clean, responsive design built with Next.js and Tailwind CSS
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18.0 or higher
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/lognessmonster.git
+   cd lognessmonster
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+
+## Usage
+
+1. Paste your logs into the text area
+2. Click "Analyze Logs"
+3. Explore the generated charts and statistics
+4. Switch between tabs to view different aspects of the analysis
+
+## Supported Log Formats
+
+### JSON Logs
+```json
+{"timestamp":"2023-10-15T12:34:56Z","level":"ERROR","message":"Connection refused","service":"api"}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Apache/NGINX Access Logs
+```
+127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /api/users HTTP/1.0" 200 2326
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### Timestamped Logs
+```
+2023-10-15 12:34:56 ERROR Connection refused
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies Used
 
-## Learn More
+- Next.js
+- React
+- Recharts (for data visualization)
+- Tailwind CSS
+- React Hook Form
+- Lodash
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Acknowledgements
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js](https://nextjs.org/)
+- [Recharts](https://recharts.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
