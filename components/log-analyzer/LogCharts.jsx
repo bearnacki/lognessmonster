@@ -276,19 +276,99 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
       return <div className="text-center p-8">No time data available</div>;
     }
 
+    // Process the time distribution data to ensure consistent formatting
+    const processedData = aggregations.timeDistribution.map((item) => {
+      if (!item.time || typeof item.time !== "string") return item;
+
+      const timeValue = item.time;
+
+      // Check if the time value is already in the full format "DD/MMM/YYYY HH:MM"
+      const fullDateMatch = timeValue.match(
+        /(\d{2}\/\w{3}\/\d{4}) (\d{2}:\d{2})/
+      );
+      if (fullDateMatch) {
+        // Data is already in the desired format, we can use it directly
+        const dateStr = fullDateMatch[1]; // "DD/MMM/YYYY"
+        const timeStr = fullDateMatch[2]; // "HH:MM"
+
+        return {
+          ...item,
+          displayTime: `${dateStr} ${timeStr}`,
+          sortKey: timeValue, // Use the full value for sorting
+        };
+      }
+
+      // Handle legacy format (just HH:MM)
+      const timeOnlyMatch = timeValue.match(/^(\d{2}):(\d{2})$/);
+      if (timeOnlyMatch) {
+        const hour = parseInt(timeOnlyMatch[1], 10);
+        const minute = timeOnlyMatch[2];
+
+        // For hours > 23, format to indicate they're from a different day
+        if (hour > 23) {
+          const normalizedHour = hour % 24;
+          const day = Math.floor(hour / 24) + 1;
+
+          return {
+            ...item,
+            displayTime: `Day ${day} ${normalizedHour
+              .toString()
+              .padStart(2, "0")}:${minute}`,
+            sortKey: `${day.toString().padStart(2, "0")}_${normalizedHour
+              .toString()
+              .padStart(2, "0")}:${minute}`,
+          };
+        }
+
+        return {
+          ...item,
+          displayTime: `${hour}:${minute}`,
+          sortKey: timeValue,
+        };
+      }
+
+      // Default case: just use the original value
+      return {
+        ...item,
+        displayTime: timeValue,
+        sortKey: timeValue,
+      };
+    });
+
+    // Sort data chronologically
+    processedData.sort((a, b) => {
+      const keyA = a.sortKey || a.time;
+      const keyB = b.sortKey || b.time;
+      return keyA.localeCompare(keyB);
+    });
+
+    // Calculate an appropriate interval for x-axis labels
+    // Limit to showing around 8-10 labels regardless of data size
+    const tickInterval = Math.max(1, Math.floor(processedData.length / 8));
+
     return (
       <div className="bg-white p-4 rounded-lg shadow">
         <h3 className="text-lg font-medium mb-4">Time Distribution</h3>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={aggregations.timeDistribution}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              data={processedData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
+              <XAxis
+                dataKey="displayTime"
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                interval={tickInterval} // Only show every nth label
+                tick={{ fontSize: 11 }}
+              />
               <YAxis />
-              <Tooltip formatter={(value) => [`${value} logs`]} />
+              <Tooltip
+                formatter={(value) => [`${value} logs`]}
+                labelFormatter={(displayTime) => `Time: ${displayTime}`}
+              />
               <Legend />
               <Bar dataKey="count" name="Logs" fill="#0088FE" />
             </BarChart>
