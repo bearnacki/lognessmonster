@@ -1,22 +1,33 @@
 # LogNessMonster - Log Analysis Tool
 
-LogNessMonster is a powerful Next.js application designed to analyze and visualize log data. It allows users to paste various types of logs, automatically detects the format, and generates insightful visualizations to help identify patterns, issues, and trends.
+LogNessMonster is a powerful Next.js application designed to analyze and visualize log data. It allows users to paste various types of logs, automatically detects patterns, and generates insightful visualizations to help identify issues and trends.
 
 ## Features
 
-- **Multi-format Log Support**: Automatically detects and parses different log formats:
-  - JSON logs
-  - Apache/NGINX access logs
-  - Timestamped logs
-  - Generic text logs
+- **Universal Log Parsing**: 
+  - Automatically extracts meaningful data from any log format
+  - No need for custom parsers or format-specific code
+  - Pattern-based approach finds timestamps, HTTP methods, status codes, IPs, etc.
+  - Works with logs from any system or application
+- **Intelligent Format Detection**:
+  - Automatically identifies log types: HTTP, server, application, timestamped, etc.
+  - Shows appropriate visualization tabs based on detected patterns
+  - No configuration needed for common log formats
 - **Interactive Visualizations**:
   - Time-based distribution of logs
+  - Status code and HTTP method breakdowns
+  - Response time analysis
   - Log level distribution
-  - HTTP status code analysis
+  - Server and client analysis
   - Common message patterns
-  - Top requested paths (for web server logs)
 - **Real-time Analysis**: Process logs client-side for immediate results
 - **Modern UI**: Clean, responsive design built with Next.js and Tailwind CSS
+- **Unlimited Log Size Handling**: 
+  - No size limits - process logs of any size
+  - Advanced memory-efficient algorithms for extremely large logs
+  - Intelligent sampling with statistical extrapolation
+  - Adaptive chunked processing to prevent UI freezing
+  - Progress indicators and time estimates for long-running operations
 
 ## Getting Started
 
@@ -56,6 +67,44 @@ LogNessMonster is a powerful Next.js application designed to analyze and visuali
 3. Explore the generated charts and statistics
 4. Switch between tabs to view different aspects of the analysis
 
+### Handling Large Log Files
+
+LogNessMonster is engineered to handle log files of any size:
+
+- **No Size Limits**: Unlike other tools, there's no upper limit on the size of logs you can analyze
+- **Memory Efficiency**: Special algorithms ensure browser memory isn't exhausted even with gigabyte-sized logs
+- **Progressive Loading**: Files are processed in chunks to maintain browser responsiveness
+- **Smart Sampling**: For extremely large logs (>100MB), the application uses intelligent sampling from different sections of the log
+- **Statistical Extrapolation**: Results are accurately projected to represent the entire dataset
+- **Performance Indicators**: Detailed progress bars and time estimates keep you informed during processing
+- **Optimized Parsing**: Different parsing strategies are automatically employed based on log size and format
+
+## Supported Log Patterns
+
+LogNessMonster can automatically extract and analyze the following patterns from your logs:
+
+### Timestamps
+- ISO format: `2023-04-17T12:34:56.789Z`
+- Common date format: `[26/Feb/2025:08:48:45 +0100]`
+- Standard timestamp: `2023-04-17 12:34:56`
+- US format: `04/17/2023 12:34:56`
+- Time only: `12:34:56`
+
+### HTTP Information
+- Methods: GET, POST, PUT, DELETE, PATCH, etc.
+- Status codes: 200, 404, 500, etc.
+- URLs and paths: `/api/users`, `https://example.com/path`
+- Response times: `0.302s`, `45ms`
+
+### Log Levels
+- Standard levels: ERROR, WARN, INFO, DEBUG, TRACE, etc.
+- In various formats: `[ERROR]`, `ERROR`, etc.
+
+### Network Information
+- IP addresses: Client and server
+- Request IDs
+- User IDs
+
 ## Supported Log Formats
 
 ### JSON Logs
@@ -81,10 +130,6 @@ LogNessMonster is a powerful Next.js application designed to analyze and visuali
 - Tailwind CSS
 - React Hook Form
 - Lodash
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgements
 
