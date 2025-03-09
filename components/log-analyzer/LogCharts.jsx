@@ -292,32 +292,6 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
       labelInterval = Math.max(1, Math.floor(dataLength / 12));
     }
 
-    // Custom tick formatter for the time axis
-    const formatTimeAxisTick = (value) => {
-      if (!value) return "";
-
-      // If the value contains both date and time (separated by space)
-      if (typeof value === "string" && value.includes(" ")) {
-        const parts = value.split(" ");
-
-        // Check if we have two parts (date and time)
-        if (parts.length >= 2) {
-          const date = parts[0];
-          const time = parts[1];
-
-          // For multiple days, show both date and time (with newline); otherwise just time
-          if (hasMultipleDays) {
-            return `${date}\n${time}`;
-          } else {
-            return time;
-          }
-        }
-      }
-
-      // Return the value as is for other cases
-      return value;
-    };
-
     return (
       <div className="bg-white p-4 rounded-lg shadow">
         <h3 className="text-lg font-medium mb-4">
@@ -340,10 +314,9 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
                 dataKey="time"
                 angle={hasMultipleDays ? -45 : 0}
                 textAnchor={hasMultipleDays ? "end" : "middle"}
-                height={hasMultipleDays ? 100 : 30}
+                height={hasMultipleDays ? 80 : 30}
                 interval={labelInterval}
                 tick={{ fontSize: hasMultipleDays ? 11 : 12 }}
-                tickFormatter={formatTimeAxisTick}
               />
               <YAxis
                 width={45}
@@ -352,11 +325,11 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
                 }
               />
               <Tooltip
-                formatter={(value) => [`${value}`]}
+                formatter={(value) => [`${value} logs`]}
                 labelFormatter={(label) => `Time: ${label}`}
               />
               <Legend />
-              <Bar dataKey="count" name="" fill="#0088FE" />
+              <Bar dataKey="count" name="Logs" fill="#0088FE" />
             </BarChart>
           </ResponsiveContainer>
         </div>
