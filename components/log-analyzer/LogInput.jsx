@@ -13,7 +13,7 @@ export default function LogInput({ onLogsSubmit }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logSize, setLogSize] = useState(0);
   const [showSizeWarning, setShowSizeWarning] = useState(false);
-  const [fullAnalysisMode, setFullAnalysisMode] = useState(false);
+  const [fullAnalysisMode, setFullAnalysisMode] = useState(true);
 
   const {
     register,
