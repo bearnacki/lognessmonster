@@ -59,6 +59,7 @@ const SEVERITY_COLORS = {
 
 export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [filterLocalIPs, setFilterLocalIPs] = useState(true);
 
   if (!logAnalysis || !logAnalysis.totalLogs) {
     return <div className="text-center p-8">No log data to display</div>;
@@ -398,6 +399,22 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
       );
     }
 
+    // Filter out localhost IPs if the filter is enabled
+    const getFilteredClientIps = () => {
+      if (!aggregations?.clientIpDistribution) return [];
+
+      const localIPs = ["127.0.0.1", "localhost", "::1", "0.0.0.0"];
+
+      return filterLocalIPs
+        ? aggregations.clientIpDistribution.filter(
+            (item) =>
+              !localIPs.includes(item.ip) && !item.ip.startsWith("127.0.0")
+          )
+        : aggregations.clientIpDistribution;
+    };
+
+    const filteredClientIps = getFilteredClientIps().slice(0, 10);
+
     return (
       <div className="space-y-6">
         {aggregations?.avgResponseTime !== undefined && (
@@ -498,27 +515,72 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
 
         {aggregations?.clientIpDistribution && (
           <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="text-lg font-medium mb-4">Top Client IPs</h3>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={aggregations.clientIpDistribution.slice(0, 10)}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis
-                    type="category"
-                    dataKey="ip"
-                    width={120}
-                    tick={{ fontSize: 12 }}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Top Client IPs</h3>
+              <div className="flex items-center">
+                <label className="inline-flex items-center cursor-pointer mr-2 text-sm text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={filterLocalIPs}
+                    onChange={(e) => setFilterLocalIPs(e.target.checked)}
+                    className="sr-only peer"
                   />
-                  <Tooltip formatter={(value) => [`${value} requests`]} />
-                  <Bar dataKey="count" fill="#8884D8" />
-                </BarChart>
-              </ResponsiveContainer>
+                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <span className="ml-2">Filter Localhost</span>
+                </label>
+                <div className="relative group">
+                  <span className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                    ⓘ
+                  </span>
+                  <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 w-48">
+                    Filters out localhost (127.0.0.1) and other local addresses
+                    from the chart
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {filteredClientIps.length > 0 ? (
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={filteredClientIps}
+                    layout="vertical"
+                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis
+                      type="category"
+                      dataKey="ip"
+                      width={120}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip formatter={(value) => [`${value} requests`]} />
+                    <Bar dataKey="count" fill="#8884D8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="h-60 flex items-center justify-center text-gray-500">
+                <p>
+                  {filterLocalIPs
+                    ? "No non-localhost IPs found. Try disabling the filter."
+                    : "No client IP data available"}
+                </p>
+              </div>
+            )}
+
+            {filterLocalIPs &&
+              aggregations.clientIpDistribution.length >
+                filteredClientIps.length && (
+                <p className="mt-2 text-xs text-gray-500 text-right">
+                  Filtered out{" "}
+                  {aggregations.clientIpDistribution.length -
+                    filteredClientIps.length}{" "}
+                  localhost/loopback IPs
+                </p>
+              )}
           </div>
         )}
       </div>
