@@ -6,10 +6,11 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            LogNessMonster
+            Uncover the insights in your logs in seconds
           </h1>
           <p className="text-xl text-gray-600">
-            Your logs analysis & visualization tool
+            Transform raw log data into actionable insights with a powerful log
+            analysis tool. Visualize patterns and detect anomalies in real-time.
           </p>
         </header>
 
