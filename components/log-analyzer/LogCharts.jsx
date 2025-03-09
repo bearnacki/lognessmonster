@@ -276,19 +276,58 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
       return <div className="text-center p-8">No time data available</div>;
     }
 
+    // Check if we're dealing with data across multiple days
+    const hasMultipleDays = aggregations.hasMultipleDays;
+    // Check if data is grouped by hour
+    const isGroupedByHour = aggregations.timeGroupedByHour;
+
+    // Calculate an appropriate interval for x-axis labels based on data size
+    const dataLength = aggregations.timeDistribution.length;
+    // For large datasets, show fewer labels to prevent overcrowding
+    // The larger the dataset, the more labels we skip
+    let labelInterval = 0; // 0 means show all labels (default)
+
+    if (dataLength > 24) {
+      // For larger datasets, calculate a reasonable interval
+      labelInterval = Math.max(1, Math.floor(dataLength / 12));
+    }
+
     return (
       <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-medium mb-4">Time Distribution</h3>
-        <div className="h-80">
+        <h3 className="text-lg font-medium mb-4">
+          Time Distribution {hasMultipleDays ? "(Multiple Days)" : ""}
+          {isGroupedByHour ? "(Hourly)" : ""}
+        </h3>
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={aggregations.timeDistribution}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={{
+                top: 5,
+                right: 30,
+                left: hasMultipleDays ? 40 : 20,
+                bottom: hasMultipleDays ? 100 : 5,
+              }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip formatter={(value) => [`${value} logs`]} />
+              <XAxis
+                dataKey="time"
+                angle={hasMultipleDays ? -45 : 0}
+                textAnchor={hasMultipleDays ? "end" : "middle"}
+                height={hasMultipleDays ? 80 : 30}
+                interval={labelInterval}
+                tick={{ fontSize: hasMultipleDays ? 11 : 12 }}
+              />
+              <YAxis
+                width={45}
+                tickFormatter={(value) =>
+                  value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value
+                }
+              />
+              <Tooltip
+                formatter={(value) => [`${value} logs`]}
+                labelFormatter={(label) => `Time: ${label}`}
+              />
               <Legend />
               <Bar dataKey="count" name="Logs" fill="#0088FE" />
             </BarChart>
