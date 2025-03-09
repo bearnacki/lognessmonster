@@ -81,9 +81,6 @@ export default function LogInput({ onLogsSubmit }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-4">
           <div>
-            <label htmlFor="logs" className="block text-sm font-medium mb-1">
-              Paste your logs here
-            </label>
             <textarea
               id="logs"
               {...register("logs", { required: "Log data is required" })}
@@ -106,7 +103,7 @@ export default function LogInput({ onLogsSubmit }) {
 
             <p className="mt-1 text-xs text-gray-500">
               Supports JSON logs, Apache/NGINX access logs, timestamped logs,
-              and more. No size limits - process logs of any size.
+              and more.
             </p>
           </div>
 

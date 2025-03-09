@@ -244,13 +244,11 @@ export default function LogAnalyzer() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4">Log Analysis Tool</h2>
-        <p className="text-gray-600 mb-6">
+        <h2 className="text-1xl  mb-4">
           Paste your logs below to analyze and visualize patterns, errors, and
           other insights. Supports various log formats including JSON,
           Apache/NGINX, and timestamped logs.
-        </p>
-
+        </h2>
         <LogInput onLogsSubmit={handleLogSubmit} />
 
         {error && (
