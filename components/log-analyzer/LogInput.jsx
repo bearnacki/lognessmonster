@@ -3,6 +3,16 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Size threshold for showing warnings
 const LARGE_LOG_WARNING_THRESHOLD = 1000000; // ~1MB
@@ -14,6 +24,9 @@ export default function LogInput({ onLogsSubmit }) {
   const [logSize, setLogSize] = useState(0);
   const [showSizeWarning, setShowSizeWarning] = useState(false);
   const [fullAnalysisMode, setFullAnalysisMode] = useState(true);
+  const [showSizeDialog, setShowSizeDialog] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [pendingLogData, setPendingLogData] = useState(null);
 
   const {
     register,
@@ -48,19 +61,33 @@ export default function LogInput({ onLogsSubmit }) {
         const sizeInMB = (size / 1024 / 1024).toFixed(2);
         const message = `The log data is large (${sizeInMB}MB) and you've enabled full analysis mode. This may take significant time and memory. Continue?`;
 
-        if (!confirm(message)) {
-          setIsSubmitting(false);
-          return;
-        }
+        setDialogMessage(message);
+        setPendingLogData(data);
+        setShowSizeDialog(true);
+        setIsSubmitting(false);
+        return;
       } else if (size > LARGE_LOG_WARNING_THRESHOLD) {
         const sizeInMB = (size / 1024 / 1024).toFixed(2);
         const message = `The log data is large (${sizeInMB}MB). Processing may take some time and could temporarily use significant memory. The application will use optimized techniques to handle this data efficiently.`;
 
-        if (!confirm(message)) {
-          setIsSubmitting(false);
-          return;
-        }
+        setDialogMessage(message);
+        setPendingLogData(data);
+        setShowSizeDialog(true);
+        setIsSubmitting(false);
+        return;
       }
+
+      // If we get here, we can process the logs directly (no size warning needed)
+      processLogs(data);
+    } catch (error) {
+      console.error("Error processing logs:", error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const processLogs = (data) => {
+    try {
+      const size = new Blob([data.logs]).size;
 
       // Pass the full analysis mode flag along with the log data
       onLogsSubmit(data.logs, fullAnalysisMode);
@@ -72,6 +99,30 @@ export default function LogInput({ onLogsSubmit }) {
     } catch (error) {
       console.error("Error processing logs:", error);
     } finally {
+      setIsSubmitting(false);
+      setPendingLogData(null);
+    }
+  };
+
+  const handleDialogConfirm = () => {
+    setShowSizeDialog(false);
+    if (pendingLogData) {
+      processLogs(pendingLogData);
+    }
+  };
+
+  const handleDialogCancel = () => {
+    setShowSizeDialog(false);
+    setPendingLogData(null);
+    setIsSubmitting(false);
+  };
+
+  // Updated to handle both direct cancel clicks and dialog close events
+  const handleDialogOpenChange = (open) => {
+    setShowSizeDialog(open);
+    if (!open) {
+      // Only clear data when closing
+      setPendingLogData(null);
       setIsSubmitting(false);
     }
   };
@@ -138,6 +189,23 @@ export default function LogInput({ onLogsSubmit }) {
           </div>
         </div>
       </form>
+
+      <AlertDialog open={showSizeDialog} onOpenChange={handleDialogOpenChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Large Log File</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>{dialogMessage}</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDialogCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDialogConfirm}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
