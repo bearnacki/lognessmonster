@@ -60,6 +60,8 @@ const SEVERITY_COLORS = {
 export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [filterLocalIPs, setFilterLocalIPs] = useState(true);
+  const [anomalyPages, setAnomalyPages] = useState({});
+  const ITEMS_PER_PAGE = 10;
 
   if (!logAnalysis || !logAnalysis.totalLogs) {
     return <div className="text-center p-8">No log data to display</div>;
@@ -740,6 +742,18 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
       });
     });
 
+    // Initialize pages for any new anomaly types
+    Object.keys(anomaliesByType).forEach((type) => {
+      if (!(type in anomalyPages)) {
+        setAnomalyPages((prev) => ({ ...prev, [type]: 0 }));
+      }
+    });
+
+    // Handle page change for a specific anomaly type
+    const handlePageChange = (type, newPage) => {
+      setAnomalyPages((prev) => ({ ...prev, [type]: newPage }));
+    };
+
     return (
       <div className="space-y-6">
         <div className="bg-white p-6 rounded-lg shadow">
@@ -755,93 +769,143 @@ export default function LogCharts({ logAnalysis, fullAnalysisMode = false }) {
           </p>
 
           <div className="space-y-6">
-            {Object.entries(anomaliesByType).map(([type, items], index) => (
-              <div key={index} className="border-t pt-4">
-                <h4 className="font-medium text-lg mb-2">
-                  {ANOMALY_LABELS[type] || type}
-                  <span className="ml-2 text-sm font-normal text-gray-500">
-                    ({items.length} instances)
-                  </span>
-                </h4>
+            {Object.entries(anomaliesByType).map(([type, items], index) => {
+              const currentPage = anomalyPages[type] || 0;
+              const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+              const startIdx = currentPage * ITEMS_PER_PAGE;
+              const endIdx = startIdx + ITEMS_PER_PAGE;
+              const paginatedItems = items.slice(startIdx, endIdx);
 
-                <div className="space-y-3 mt-3">
-                  {items.slice(0, 10).map((item, itemIndex) => (
-                    <div key={itemIndex} className="bg-gray-50 p-3 rounded-md">
+              return (
+                <div key={index} className="border-t pt-4">
+                  <h4 className="font-medium text-lg mb-2">
+                    {ANOMALY_LABELS[type] || type}
+                    <span className="ml-2 text-sm font-normal text-gray-500">
+                      ({items.length} instances)
+                    </span>
+                  </h4>
+
+                  <div className="space-y-3 mt-3">
+                    {paginatedItems.map((item, itemIndex) => (
                       <div
-                        className={`${
-                          SEVERITY_COLORS[item.anomalyDetails.severity] ||
-                          "text-gray-500"
-                        } font-medium`}
+                        key={itemIndex}
+                        className="bg-gray-50 p-3 rounded-md"
                       >
-                        {item.anomalyDetails.severity || "unknown"}
-                      </div>
-                      <div className="ml-4 flex-1">
-                        <p className="text-gray-800">
-                          {item.anomalyDetails.message}
-                        </p>
+                        <div
+                          className={`${
+                            SEVERITY_COLORS[item.anomalyDetails.severity] ||
+                            "text-gray-500"
+                          } font-medium`}
+                        >
+                          {item.anomalyDetails.severity || "unknown"}
+                        </div>
+                        <div className="ml-4 flex-1">
+                          <p className="text-gray-800">
+                            {item.anomalyDetails.message}
+                          </p>
 
-                        <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-x-4 gap-y-1">
-                          {item.timestamp && (
-                            <div>
-                              <span className="font-medium">Time:</span>{" "}
-                              {item.timestamp}
-                            </div>
-                          )}
-                          {item.lineNumber && (
-                            <div>
-                              <span className="font-medium">Line:</span>{" "}
-                              {item.lineNumber}
-                            </div>
-                          )}
-                          {item.details.method && (
-                            <div>
-                              <span className="font-medium">Method:</span>{" "}
-                              {item.details.method}
-                            </div>
-                          )}
-                          {item.details.path && (
-                            <div>
-                              <span className="font-medium">Path:</span>{" "}
-                              {item.details.path}
-                            </div>
-                          )}
-                          {item.details.statusCode && (
-                            <div>
-                              <span className="font-medium">Status:</span>{" "}
-                              {item.details.statusCode}
-                            </div>
-                          )}
-                          {item.details.responseTime && (
-                            <div>
-                              <span className="font-medium">
-                                Response Time:
-                              </span>{" "}
-                              {item.details.responseTime.toFixed(3)}s
+                          <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-x-4 gap-y-1">
+                            {item.timestamp && (
+                              <div>
+                                <span className="font-medium">Time:</span>{" "}
+                                {item.timestamp}
+                              </div>
+                            )}
+                            {item.lineNumber && (
+                              <div>
+                                <span className="font-medium">Line:</span>{" "}
+                                {item.lineNumber}
+                              </div>
+                            )}
+                            {item.details.method && (
+                              <div>
+                                <span className="font-medium">Method:</span>{" "}
+                                {item.details.method}
+                              </div>
+                            )}
+                            {item.details.path && (
+                              <div>
+                                <span className="font-medium">Path:</span>{" "}
+                                {item.details.path}
+                              </div>
+                            )}
+                            {item.details.statusCode && (
+                              <div>
+                                <span className="font-medium">Status:</span>{" "}
+                                {item.details.statusCode}
+                              </div>
+                            )}
+                            {item.details.responseTime && (
+                              <div>
+                                <span className="font-medium">
+                                  Response Time:
+                                </span>{" "}
+                                {item.details.responseTime.toFixed(3)}s
+                              </div>
+                            )}
+                          </div>
+
+                          {item.details.message && (
+                            <div className="mt-2 text-xs text-gray-500 border-t border-gray-200 pt-2">
+                              {item.details.message.length > 150
+                                ? `${item.details.message.substring(0, 150)}...`
+                                : item.details.message}
                             </div>
                           )}
                         </div>
-
-                        {item.details.message && (
-                          <div className="mt-2 text-xs text-gray-500 border-t border-gray-200 pt-2">
-                            {item.details.message.length > 150
-                              ? `${item.details.message.substring(0, 150)}...`
-                              : item.details.message}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  {items.length > 10 && (
-                    <div className="text-center mt-2">
-                      <span className="text-gray-500 text-sm">
-                        Showing 10 of {items.length} anomalies of this type
-                      </span>
-                    </div>
-                  )}
+                    {/* Pagination controls */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-between items-center mt-4 text-sm">
+                        <div>
+                          Showing {startIdx + 1}-
+                          {Math.min(endIdx, items.length)} of {items.length}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() =>
+                              handlePageChange(
+                                type,
+                                Math.max(0, currentPage - 1)
+                              )
+                            }
+                            disabled={currentPage === 0}
+                            className={`px-3 py-1 rounded ${
+                              currentPage === 0
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                            }`}
+                          >
+                            Previous
+                          </button>
+                          <div className="px-3 py-1 bg-gray-100 rounded">
+                            Page {currentPage + 1} of {totalPages}
+                          </div>
+                          <button
+                            onClick={() =>
+                              handlePageChange(
+                                type,
+                                Math.min(totalPages - 1, currentPage + 1)
+                              )
+                            }
+                            disabled={currentPage === totalPages - 1}
+                            className={`px-3 py-1 rounded ${
+                              currentPage === totalPages - 1
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                            }`}
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
