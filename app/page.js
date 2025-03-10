@@ -10,7 +10,7 @@ export default function Home() {
               Uncover the insights in your logs in{" "}
               <span className="text-yellow-300">seconds</span>
             </h1>
-            <p className="text-xl text-gray-100 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-gray-100 leading-relaxed max-w-1xl mx-auto">
               Transform raw log data into actionable insights with a powerful
               log analysis tool. Visualize patterns and detect anomalies in
               real-time.
